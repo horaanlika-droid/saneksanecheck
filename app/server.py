@@ -19,6 +19,56 @@ log = logging.getLogger(__name__)
 
 FRONTEND_DIR = Path(__file__).parent.parent / "frontend"
 
+# флаг: автоопределение WEBAPP_URL делаем один раз за процесс
+_webapp_autodetect_done = False
+
+
+def _public_host(request: Request) -> str:
+    """Публичный host из заголовков прокси; '' если запрос локальный."""
+    host = (
+        request.headers.get("x-forwarded-host")
+        or request.headers.get("host")
+        or ""
+    ).split(",")[0].strip()
+    host_lc = host.lower()
+    if not host or host_lc.startswith((
+        "localhost", "127.", "0.0.0.0", "[::1]", "[::", "10.", "192.168.", "172.16.",
+    )):
+        return ""
+    return host
+
+
+async def _autodetect_webapp_url(request: Request) -> None:
+    """Если WEBAPP_URL нигде не задан — определяем публичный адрес приложения
+    по первому внешнему запросу и сохраняем в webapp_url: кнопка меню бота
+    после этого устанавливается сама, без ручной настройки на хостинге."""
+    global _webapp_autodetect_done
+    host = _public_host(request)
+    if not host or _webapp_autodetect_done:
+        return
+    _webapp_autodetect_done = True
+    try:
+        if get_settings().WEBAPP_URL or await db.get_setting("webapp_url", ""):
+            return
+        proto = (request.headers.get("x-forwarded-proto") or "https").split(",")[0].strip().lower()
+        if proto not in ("http", "https"):
+            proto = "https"
+        # Telegram Mini App требует https — на хостингах TLS терминируется на прокси
+        url = f"https://{host}" if proto == "http" else f"{proto}://{host}"
+        await db.set_setting("webapp_url", url)
+        log.info("WEBAPP_URL auto-detected from request: %s", url)
+        try:
+            from app.bot.bot import push_bot_settings
+            from app.bot.notify import get_bot
+
+            bot = get_bot()
+            if bot is not None:
+                await push_bot_settings(bot)
+        except Exception:
+            log.exception("menu button push after autodetect failed")
+    except Exception:
+        log.exception("webapp url autodetect failed")
+
 PUBLIC_SETTINGS = [
     "brand_name", "tagline", "about", "facts", "city", "phone",
     "telegram", "whatsapp", "instagram", "behance", "email",
@@ -56,6 +106,11 @@ class BookingIn(BaseModel):
 
 def create_app() -> FastAPI:
     app = FastAPI(title="Photographer Portfolio", docs_url=None, redoc_url=None)
+
+    @app.middleware("http")
+    async def webapp_autodetect(request: Request, call_next):
+        await _autodetect_webapp_url(request)
+        return await call_next(request)
 
     @app.get("/health")
     async def health():
