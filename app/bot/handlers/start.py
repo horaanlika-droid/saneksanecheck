@@ -80,7 +80,11 @@ async def cmd_app(message: Message):
     markup = await app_button_kb()
     if markup is None:
         if message.from_user and await db.is_admin(message.from_user.id):
-            await message.answer("🔗 Адрес приложения не задан. Укажите WEBAPP_URL в настройках хостинга или в разделе «Профиль» → «Адрес веб-приложения».")
+            await message.answer(
+                "🔗 Адрес приложения не задан. Откройте сайт один раз с хостинга — "
+                "адрес определится автоматически, либо укажите WEBAPP_URL в настройках "
+                "хостинга / в разделе «Профиль» → «Адрес веб-приложения»."
+            )
         else:
             await message.answer("Приложение скоро будет доступно ✨")
         return

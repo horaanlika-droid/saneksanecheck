@@ -49,7 +49,10 @@ async def push_bot_settings(bot: Bot) -> None:
             )
             log.info("menu button -> %s", webapp_url)
         else:
-            log.warning("WEBAPP_URL не задан — кнопка меню не установлена")
+            log.warning(
+                "WEBAPP_URL не задан — кнопка меню не установлена; "
+                "адрес определится автоматически после первого внешнего запроса к сайту"
+            )
     except Exception:
         log.exception("set_chat_menu_button failed")
 
@@ -62,8 +65,12 @@ async def push_bot_settings(bot: Bot) -> None:
     except Exception:
         log.exception("set description failed")
 
-    me = await bot.get_me()
-    log.info("bot started as @%s", me.username)
+    try:
+        me = await bot.get_me()
+        log.info("bot started as @%s", me.username)
+    except Exception:
+        # сетевой сбой не должен ронять startup (иначе polling не стартует)
+        log.exception("get_me failed")
 
 
 def create_dispatcher() -> Dispatcher:
