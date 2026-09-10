@@ -146,13 +146,6 @@ function renderAll() {
   document.getElementById("brandName").textContent = s.brand_name || "";
   document.getElementById("footerBrand").textContent = `© ${new Date().getFullYear()} ${s.brand_name || ""}`;
   document.getElementById("footerTag").textContent = s.tagline || "";
-  // стартовая надпись (прелоадер) — та же настройка, что и в админ-боте;
-  // кэшируем, чтобы и на следующей загрузке до ответа API показывалась актуальная
-  const preBrand = document.getElementById("preBrand");
-  if (preBrand) preBrand.textContent = s.brand_name || "";
-  try {
-    if (s.brand_name) localStorage.setItem("brand_name", s.brand_name);
-  } catch (e) { /* приватный режим — не критично */ }
 
   // hero
   document.getElementById("heroName").textContent = s.brand_name || "";
@@ -492,14 +485,6 @@ async function boot() {
   initChrome();
   applyLang();
   observeReveals();
-  // пока грузится API — в прелоадере показываем имя из кэша (админ может менять его в боте)
-  try {
-    const cached = localStorage.getItem("brand_name");
-    if (cached) {
-      const preBrand = document.getElementById("preBrand");
-      if (preBrand) preBrand.textContent = cached;
-    }
-  } catch (e) { /* приватный режим — не критично */ }
   try {
     await loadSite();
     renderAll();
