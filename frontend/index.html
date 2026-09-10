@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>SANEK — Photographer</title>
+<meta name="description" content="Fine-art & editorial photographer. Portfolio, services and booking.">
+<meta name="theme-color" content="#F4F2ED">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%23131311'/%3E%3Ctext x='32' y='44' font-family='Arial' font-size='36' font-weight='bold' fill='%23F4F2ED' text-anchor='middle'%3ES%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Inter+Tight:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<link rel="stylesheet" href="/static/styles.css">
+</head>
+<body>
+
+<div id="preloader"><div class="pre-brand">SANEK</div></div>
+
+<header id="header">
+  <div class="wrap header-in">
+    <a class="brand" href="#top"><span class="brand-dot"></span><span id="brandName">SANEK</span></a>
+    <nav class="nav">
+      <a href="#works" data-i18n="nav.works">Работы</a>
+      <a href="#services" data-i18n="nav.services">Услуги</a>
+      <a href="#exhibitions" data-i18n="nav.exhibitions">Выставки</a>
+      <a href="#contacts" data-i18n="nav.contacts">Контакты</a>
+    </nav>
+    <div class="header-actions">
+      <button id="langBtn" class="lang-btn" aria-label="Language">EN</button>
+      <a href="#booking" class="btn btn-dark btn-sm" data-i18n="nav.book">Записаться</a>
+      <button id="burger" class="burger" aria-label="Menu"><span></span><span></span></button>
+    </div>
+  </div>
+</header>
+
+<div id="mobileMenu" class="mobile-menu" hidden>
+  <nav>
+    <a href="#works" data-i18n="nav.works">Работы</a>
+    <a href="#services" data-i18n="nav.services">Услуги</a>
+    <a href="#exhibitions" data-i18n="nav.exhibitions">Выставки</a>
+    <a href="#contacts" data-i18n="nav.contacts">Контакты</a>
+    <a href="#booking" class="accent" data-i18n="nav.book">Записаться</a>
+  </nav>
+</div>
+
+<main>
+  <!-- HERO -->
+  <section id="top" class="hero">
+    <div class="wrap hero-grid">
+      <div class="hero-copy">
+        <div class="overline reveal" data-i18n="hero.overline">Портфолио — editorial &amp; fine art</div>
+        <h1 class="display reveal" id="heroName">SANEK</h1>
+        <p class="tagline reveal" id="heroTagline"></p>
+        <div class="hero-meta reveal" id="heroMeta"></div>
+        <div class="hero-cta reveal">
+          <a href="#booking" class="btn btn-dark" data-i18n="hero.book">Записаться на съёмку</a>
+          <a href="#works" class="btn btn-ghost" data-i18n="hero.works">Смотреть работы</a>
+        </div>
+      </div>
+      <div class="hero-media reveal">
+        <img id="heroImg" alt="Photographer work" loading="eager">
+        <div class="hero-cap" id="heroCap"></div>
+      </div>
+    </div>
+    <div class="scroll-hint" data-i18n="hero.scroll">листайте вниз</div>
+  </section>
+
+  <div class="marquee" aria-hidden="true"><div class="marquee-track" id="marqueeTrack"></div></div>
+
+  <!-- ABOUT -->
+  <section id="about" class="section">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">01</span><span class="sec-label" data-i18n="about.label">Обо мне</span></div>
+      <div class="about-grid">
+        <div class="about-media reveal"><img id="avatarImg" alt="Photographer" loading="lazy"></div>
+        <div class="about-copy">
+          <h2 class="h2 reveal" id="aboutTitle"></h2>
+          <div class="about-text reveal" id="aboutText"></div>
+          <ul class="facts reveal" id="factsList"></ul>
+          <div class="stats reveal" id="statsRow"></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- WORKS -->
+  <section id="works" class="section section-dark">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">02</span><span class="sec-label" data-i18n="works.label">Работы</span></div>
+      <h2 class="h2 reveal" data-i18n="works.title">Избранные серии</h2>
+      <div class="pills reveal" id="catPills"></div>
+      <div class="albums-grid" id="albumsGrid"></div>
+      <div class="empty-note" id="worksEmpty" hidden data-i18n="works.empty">Работы скоро появятся.</div>
+    </div>
+  </section>
+
+  <!-- SELECTED -->
+  <section id="selected" class="section section-tight" hidden>
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-label" data-i18n="selected.label">Selected works</span></div>
+      <div class="selected-row" id="selectedRow"></div>
+    </div>
+  </section>
+
+  <!-- SERVICES -->
+  <section id="services" class="section">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">03</span><span class="sec-label" data-i18n="services.label">Услуги</span></div>
+      <h2 class="h2 reveal" data-i18n="services.title">Форматы съёмки</h2>
+      <div class="services-grid" id="servicesGrid"></div>
+      <div class="empty-note" id="servicesEmpty" hidden data-i18n="services.empty">Услуги скоро появятся.</div>
+    </div>
+  </section>
+
+  <!-- EXHIBITIONS -->
+  <section id="exhibitions" class="section section-tight">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">04</span><span class="sec-label" data-i18n="ex.label">Выставки и награды</span></div>
+      <div class="ex-list" id="exList"></div>
+      <div class="empty-note" id="exEmpty" hidden data-i18n="ex.empty">Список скоро появится.</div>
+    </div>
+  </section>
+
+  <!-- CONTACTS -->
+  <section id="contacts" class="section section-dark">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">05</span><span class="sec-label" data-i18n="contacts.label">Контакты</span></div>
+      <h2 class="h2 h2-big reveal" data-i18n="contacts.title">Давайте создадим что-то выдающееся</h2>
+      <div class="contact-links" id="contactLinks"></div>
+      <p class="contacts-note reveal" data-i18n="contacts.note">Отвечаю в течение дня. Для коммерческих запросов — пожалуйста, сразу опишите задачу.</p>
+    </div>
+  </section>
+
+  <!-- BOOKING -->
+  <section id="booking" class="section section-dark section-booking">
+    <div class="wrap">
+      <div class="sec-head reveal"><span class="sec-num">06</span><span class="sec-label" data-i18n="booking.label">Запись</span></div>
+      <div class="booking-grid">
+        <div>
+          <h2 class="h2 reveal" data-i18n="booking.title">Записаться на съёмку</h2>
+          <p class="booking-sub reveal" data-i18n="booking.sub">Оставьте заявку — я свяжусь с вами, чтобы обсудить детали.</p>
+        </div>
+        <form id="bookForm" class="book-form reveal" novalidate>
+          <div class="field">
+            <label for="fName" data-i18n="booking.name">Ваше имя</label>
+            <input id="fName" name="name" type="text" maxlength="100" autocomplete="name" required data-i18n-ph="booking.name_ph" placeholder="Как к вам обращаться">
+          </div>
+          <div class="field">
+            <label for="fContact" data-i18n="booking.contact">Телефон или Telegram</label>
+            <input id="fContact" name="contact" type="text" maxlength="200" autocomplete="tel" required data-i18n-ph="booking.contact_ph" placeholder="+7 ___ ___-__-__ или @username">
+          </div>
+          <div class="field-row">
+            <div class="field">
+              <label for="fService" data-i18n="booking.service">Услуга</label>
+              <select id="fService" name="service_id"><option value="" data-i18n="booking.any">Пока не определился</option></select>
+            </div>
+            <div class="field">
+              <label for="fDate" data-i18n="booking.date">Желаемая дата</label>
+              <input id="fDate" name="date_text" type="text" maxlength="100" data-i18n-ph="booking.date_ph" placeholder="Например: середина октября">
+            </div>
+          </div>
+          <div class="field">
+            <label for="fMsg" data-i18n="booking.message">О съёмке</label>
+            <textarea id="fMsg" name="message" rows="3" maxlength="2000" data-i18n-ph="booking.message_ph" placeholder="Пара слов о задаче, городе, настроении"></textarea>
+          </div>
+          <button type="submit" class="btn btn-light btn-block" id="bookSubmit" data-i18n="booking.submit">Отправить заявку</button>
+          <p class="form-note" data-i18n="booking.note">Нажимая кнопку, вы соглашаетесь на обработку персональных данных.</p>
+        </form>
+        <div id="bookSuccess" class="book-success" hidden>
+          <div class="book-success-mark">✓</div>
+          <h3 data-i18n="booking.success_title">Заявка отправлена</h3>
+          <p data-i18n="booking.success_text">Спасибо! Я свяжусь с вами в ближайшее время.</p>
+          <button class="btn btn-ghost-light" id="bookAgain" data-i18n="booking.more">Отправить ещё одну</button>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap footer-in">
+    <span id="footerBrand">© 2026 SANEK</span>
+    <span class="footer-tag" id="footerTag"></span>
+  </div>
+</footer>
+
+<!-- ALBUM OVERLAY -->
+<div id="albumView" class="album-view" hidden>
+  <div class="wrap">
+    <button id="albumBack" class="back-btn">← <span data-i18n="album.back">Все работы</span></button>
+    <div id="albumHead"></div>
+    <div id="albumGrid" class="masonry"></div>
+  </div>
+</div>
+
+<!-- LIGHTBOX -->
+<div id="lightbox" class="lightbox" hidden>
+  <button class="lb-btn lb-close" id="lbClose" aria-label="Close">✕</button>
+  <button class="lb-btn lb-prev" id="lbPrev" aria-label="Prev">←</button>
+  <button class="lb-btn lb-next" id="lbNext" aria-label="Next">→</button>
+  <figure>
+    <img id="lbImg" alt="">
+    <figcaption><span id="lbCap"></span><span id="lbCount"></span></figcaption>
+  </figure>
+</div>
+
+<div id="toast" class="toast" hidden></div>
+
+<noscript><div style="padding:40px;text-align:center">Включите JavaScript, чтобы открыть портфолио.</div></noscript>
+<script src="/static/app.js"></script>
+</body>
+</html>

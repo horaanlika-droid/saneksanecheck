@@ -1,0 +1,8 @@
+fastapi>=0.115
+uvicorn[standard]>=0.30
+aiogram>=3.15,<4
+aiosqlite>=0.20
+aiofiles>=23
+pillow>=10
+pydantic>=2
+pydantic-settings>=2
