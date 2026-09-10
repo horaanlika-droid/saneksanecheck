@@ -18,7 +18,7 @@ log = logging.getLogger(__name__)
 SEED_DIR = Path(__file__).parent / "seed_assets"
 
 DEFAULT_SETTINGS = {
-    "brand_name": "SANEK",
+    "brand_name": "kolpako_v",
     "tagline": "Fine-art & editorial photographer",
     "about": (
         "Фотограф мирового класса. Работаю на стыке fashion-editorial и fine art: "
