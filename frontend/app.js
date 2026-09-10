@@ -66,7 +66,11 @@ const I18N = {
   }
 };
 
-let LANG = localStorage.getItem("sanek_lang") || "ru";
+let LANG = "ru";
+try {
+  const stored = window.localStorage && window.localStorage.getItem("sanek_lang");
+  if (stored) LANG = stored;
+} catch (e) {}
 if (!I18N[LANG]) LANG = "ru";
 const t = (key) => (I18N[LANG] && I18N[LANG][key]) || I18N.ru[key] || key;
 
@@ -108,6 +112,7 @@ function richDesc(text) {
 
 function toast(msg) {
   const el = document.getElementById("toast");
+  if (!el) return;
   el.textContent = msg;
   el.hidden = false;
   clearTimeout(el._timer);
@@ -119,13 +124,23 @@ function haptic(kind) {
 }
 
 /* ---------------- reveal on scroll ---------------- */
-const revealObserver = new IntersectionObserver((entries) => {
-  for (const e of entries) {
-    if (e.isIntersecting) { e.target.classList.add("visible"); revealObserver.unobserve(e.target); }
-  }
-}, { threshold: 0.08 });
+let revealObserver = null;
+try {
+  revealObserver = new IntersectionObserver((entries) => {
+    for (const e of entries) {
+      if (e.isIntersecting) { e.target.classList.add("visible"); try { revealObserver.unobserve(e.target); } catch (err) {} }
+    }
+  }, { threshold: 0.08 });
+} catch (e) {
+  revealObserver = null;
+}
 function observeReveals(root) {
-  (root || document).querySelectorAll(".reveal:not(.visible)").forEach((el) => revealObserver.observe(el));
+  const nodes = (root || document).querySelectorAll(".reveal:not(.visible)");
+  if (!revealObserver) {
+    nodes.forEach((el) => el.classList.add("visible"));
+    return;
+  }
+  nodes.forEach((el) => { try { revealObserver.observe(el); } catch (err) {} });
 }
 
 /* ---------------- state ---------------- */
@@ -261,8 +276,15 @@ function renderServices() {
     img.addEventListener("click", () => openLightbox(svc.photos, Number(img.dataset.pi)));
   });
   grid.querySelectorAll("[data-book]").forEach((b) => b.addEventListener("click", () => {
-    document.getElementById("fService").value = String(b.dataset.book);
-    document.getElementById("booking").scrollIntoView({ behavior: "smooth" });
+    const sel = document.getElementById("fService");
+    if (sel) sel.value = String(b.dataset.book);
+    const dest = document.getElementById("booking");
+    if (dest) {
+      try {
+        if (dest.scrollIntoView) dest.scrollIntoView({ behavior: "smooth" });
+        else location.hash = "#booking";
+      } catch (e) { location.hash = "#booking"; }
+    }
     haptic("success");
   }));
 }
@@ -418,12 +440,15 @@ async function submitBooking(e) {
 
 /* ---------------- language ---------------- */
 function applyLang() {
-  document.documentElement.lang = LANG;
-  document.getElementById("langBtn").textContent = LANG === "ru" ? "EN" : "RU";
-  document.querySelectorAll("[data-i18n]").forEach((el) => { el.textContent = t(el.dataset.i18n); });
-  document.querySelectorAll("[data-i18n-ph]").forEach((el) => { el.placeholder = t(el.dataset.i18nPh); });
-  localStorage.setItem("sanek_lang", LANG);
-  if (SITE) renderAll();
+  try {
+    document.documentElement.lang = LANG;
+    const lb = document.getElementById("langBtn");
+    if (lb) lb.textContent = LANG === "ru" ? "EN" : "RU";
+    document.querySelectorAll("[data-i18n]").forEach((el) => { try { el.textContent = t(el.dataset.i18n); } catch (e) {} });
+    document.querySelectorAll("[data-i18n-ph]").forEach((el) => { try { el.placeholder = t(el.dataset.i18nPh); } catch (e) {} });
+    try { if (window.localStorage) window.localStorage.setItem("sanek_lang", LANG); } catch (e) {}
+    if (SITE) renderAll();
+  } catch (e) {}
 }
 
 /* ---------------- init ---------------- */
@@ -438,63 +463,95 @@ function initTelegram() {
 }
 
 function initChrome() {
-  const header = document.getElementById("header");
-  addEventListener("scroll", () => header.classList.toggle("scrolled", scrollY > 24), { passive: true });
-  const burger = document.getElementById("burger");
-  const menu = document.getElementById("mobileMenu");
-  burger.addEventListener("click", () => {
-    const open = menu.hidden;
-    menu.hidden = !open;
-    document.body.classList.toggle("menu-open", open);
-    document.body.style.overflow = open ? "hidden" : "";
-  });
-  menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => {
-    menu.hidden = true;
-    document.body.classList.remove("menu-open");
-    document.body.style.overflow = "";
-  }));
-  document.getElementById("langBtn").addEventListener("click", () => {
-    LANG = LANG === "ru" ? "en" : "ru";
-    applyLang();
-  });
-  document.getElementById("albumBack").addEventListener("click", closeAlbum);
-  document.getElementById("lbClose").addEventListener("click", closeLightbox);
-  document.getElementById("lbPrev").addEventListener("click", (e) => { e.stopPropagation(); lbIndex = (lbIndex - 1 + lbPhotos.length) % lbPhotos.length; renderLb(); });
-  document.getElementById("lbNext").addEventListener("click", (e) => { e.stopPropagation(); lbIndex = (lbIndex + 1) % lbPhotos.length; renderLb(); });
-  document.getElementById("lightbox").addEventListener("click", (e) => { if (e.target.id === "lightbox") closeLightbox(); });
-  const lb = document.getElementById("lightbox");
-  lb.addEventListener("touchstart", (e) => { lbTouchX = e.changedTouches[0].clientX; }, { passive: true });
-  lb.addEventListener("touchend", (e) => {
-    if (lbTouchX === null) return;
-    const dx = e.changedTouches[0].clientX - lbTouchX;
-    if (Math.abs(dx) > 50) {
-      lbIndex = (lbIndex + (dx < 0 ? 1 : -1) + lbPhotos.length) % lbPhotos.length;
-      renderLb();
+  try {
+    const header = document.getElementById("header");
+    if (header) {
+      window.addEventListener("scroll", () => header.classList.toggle("scrolled", window.scrollY > 24), { passive: true });
     }
-    lbTouchX = null;
-  }, { passive: true });
-  document.getElementById("bookForm").addEventListener("submit", submitBooking);
-  document.getElementById("bookAgain").addEventListener("click", () => {
-    document.getElementById("bookForm").hidden = false;
-    document.getElementById("bookSuccess").hidden = true;
-  });
+    const burger = document.getElementById("burger");
+    const menu = document.getElementById("mobileMenu");
+    if (burger && menu) {
+      burger.addEventListener("click", () => {
+        const open = menu.hidden;
+        menu.hidden = !open;
+        document.body.classList.toggle("menu-open", open);
+        document.body.style.overflow = open ? "hidden" : "";
+      });
+      menu.querySelectorAll("a").forEach((a) => a.addEventListener("click", () => {
+        menu.hidden = true;
+        document.body.classList.remove("menu-open");
+        document.body.style.overflow = "";
+      }));
+    }
+    const langBtn = document.getElementById("langBtn");
+    if (langBtn) {
+      langBtn.addEventListener("click", () => {
+        LANG = LANG === "ru" ? "en" : "ru";
+        applyLang();
+      });
+    }
+    const albumBack = document.getElementById("albumBack");
+    if (albumBack) albumBack.addEventListener("click", closeAlbum);
+    const lbClose = document.getElementById("lbClose");
+    if (lbClose) lbClose.addEventListener("click", closeLightbox);
+    const lbPrev = document.getElementById("lbPrev");
+    if (lbPrev) lbPrev.addEventListener("click", (e) => { e.stopPropagation(); lbIndex = (lbIndex - 1 + lbPhotos.length) % lbPhotos.length; renderLb(); });
+    const lbNext = document.getElementById("lbNext");
+    if (lbNext) lbNext.addEventListener("click", (e) => { e.stopPropagation(); lbIndex = (lbIndex + 1) % lbPhotos.length; renderLb(); });
+    const lightbox = document.getElementById("lightbox");
+    if (lightbox) {
+      lightbox.addEventListener("click", (e) => { if (e.target.id === "lightbox") closeLightbox(); });
+      lightbox.addEventListener("touchstart", (e) => { lbTouchX = e.changedTouches[0].clientX; }, { passive: true });
+      lightbox.addEventListener("touchend", (e) => {
+        if (lbTouchX === null) return;
+        const dx = e.changedTouches[0].clientX - lbTouchX;
+        if (Math.abs(dx) > 50) {
+          lbIndex = (lbIndex + (dx < 0 ? 1 : -1) + lbPhotos.length) % lbPhotos.length;
+          renderLb();
+        }
+        lbTouchX = null;
+      }, { passive: true });
+    }
+    const bookForm = document.getElementById("bookForm");
+    if (bookForm) bookForm.addEventListener("submit", submitBooking);
+    const bookAgain = document.getElementById("bookAgain");
+    if (bookAgain) bookAgain.addEventListener("click", () => {
+      const bf = document.getElementById("bookForm");
+      const bs = document.getElementById("bookSuccess");
+      if (bf) bf.hidden = false;
+      if (bs) bs.hidden = true;
+    });
+  } catch (e) {
+    console.error("initChrome failed", e);
+  }
 }
 
 async function boot() {
-  initTelegram();
-  initChrome();
-  applyLang();
-  observeReveals();
+  try { initTelegram(); } catch (e) {}
+  try { initChrome(); } catch (e) { console.error(e); }
+  try { applyLang(); } catch (e) {}
+  try { observeReveals(); } catch (e) {}
   try {
     await loadSite();
     renderAll();
   } catch (e) {
     toast("Ошибка загрузки. Обновите страницу.");
   }
-  setTimeout(() => document.getElementById("preloader").classList.add("hide"), 500);
+  setTimeout(() => {
+    try {
+      const pr = document.getElementById("preloader");
+      if (pr) pr.classList.add("hide");
+    } catch (e) {}
+  }, 500);
   // deep-link в альбом
-  const m = location.hash.match(/^#album-(\d+)/);
-  if (m && SITE) openAlbum(Number(m[1]));
+  try {
+    const m = location.hash.match(/^#album-(\d+)/);
+    if (m && SITE) openAlbum(Number(m[1]));
+  } catch (e) {}
 }
 
-document.addEventListener("DOMContentLoaded", boot);
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
